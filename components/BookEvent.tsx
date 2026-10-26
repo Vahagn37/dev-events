@@ -2,23 +2,28 @@
 
 import {useState} from "react";
 import {createBooking} from "@/lib/actions/booking.actions";
-import posthog from "posthog-js";
 
 const BookEvent = ({ eventId, slug }: { eventId: string, slug: string;}) => {
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
+    const [pending, setPending] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setMessage(null);
+        setPending(true);
 
-        const { success } = await createBooking({ eventId, slug, email });
+        try {
+            const { success, message: errorMessage } = await createBooking({ eventId, slug, email });
 
-        if(success) {
-            setSubmitted(true);
-            posthog.capture('event_booked', { eventId, slug, email })
-        } else {
-            console.error('Booking creation failed')
-            posthog.captureException('Booking creation failed')
+            if (success) {
+                setSubmitted(true);
+            } else {
+                setMessage(errorMessage ?? 'Could not book this event');
+            }
+        } finally {
+            setPending(false);
         }
     }
 
@@ -39,7 +44,10 @@ const BookEvent = ({ eventId, slug }: { eventId: string, slug: string;}) => {
                         />
                     </div>
 
-                    <button type="submit" className="button-submit">Submit</button>
+                    {message ? <p className="text-sm text-red-300">{message}</p> : null}
+                    <button type="submit" className="button-submit" disabled={pending}>
+                        {pending ? 'Booking…' : 'Submit'}
+                    </button>
                 </form>
             )}
         </div>

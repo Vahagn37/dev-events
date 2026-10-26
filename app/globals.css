@@ -163,7 +163,7 @@
         }
 
         ul {
-            @apply flex flex-row items-center gap-6;
+            @apply flex list-none flex-row items-center gap-6;
         }
     }
 
@@ -249,6 +249,85 @@
 
     .pill {
         @apply bg-dark-100 text-light-100 text-xs rounded-[6px] px-5 py-2;
+    }
+
+    #create-event {
+        @apply mx-auto flex w-full max-w-2xl flex-col gap-8;
+
+        form {
+            @apply flex flex-col gap-5;
+        }
+
+        label {
+            @apply flex flex-col gap-2 text-sm text-light-100;
+        }
+
+        input, textarea, select {
+            @apply bg-dark-200 rounded-[6px] border border-white/10 px-5 py-2.5 text-foreground transition-shadow;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            @apply outline-none;
+            box-shadow: 0 0 0 1px #59deca;
+        }
+
+        textarea {
+            @apply min-h-28;
+        }
+
+        .pair {
+            @apply grid gap-5 sm:grid-cols-2;
+        }
+
+        input[type="date"], input[type="time"] {
+            color-scheme: dark;
+            accent-color: #59deca;
+            min-height: 2.75rem;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.9;
+            filter: invert(78%) sepia(28%) saturate(620%) hue-rotate(118deg);
+        }
+
+        .modes {
+            @apply m-0 flex min-w-0 flex-col gap-2 border-0 p-0 text-sm text-light-100;
+
+            legend {
+                @apply mb-2 px-0;
+            }
+
+            div {
+                @apply grid grid-cols-3 gap-1 rounded-[10px] bg-dark-200 p-1;
+            }
+
+            label {
+                @apply relative cursor-pointer items-center justify-center rounded-[8px] px-2 py-2.5 text-center text-sm font-medium text-light-100 transition-colors;
+            }
+
+            input {
+                @apply absolute inset-0 m-0 h-full w-full cursor-pointer border-0 p-0 opacity-0;
+                box-shadow: none;
+            }
+
+            label:has(input:checked) {
+                @apply bg-primary text-black;
+            }
+
+            label:has(input:focus-visible) {
+                box-shadow: inset 0 0 0 1px #59deca;
+            }
+        }
+
+        button {
+            @apply bg-primary hover:bg-primary/90 w-fit cursor-pointer rounded-[6px] px-5 py-2.5 text-lg font-semibold text-black;
+        }
+
+        .error {
+            @apply text-sm text-red-300;
+        }
     }
 
     #book-event {
