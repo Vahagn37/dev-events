@@ -1,6 +1,6 @@
+import {Suspense} from "react";
 import ExploreBtn from "@/components/ExploreBtn";
-import EventCard from "@/components/EventCard";
-import {IEvent} from "@/database";
+import EventList from "@/components/EventList";
 import {cacheLife, cacheTag} from "next/cache";
 
 const BASE_URL = (
@@ -23,14 +23,9 @@ const Page = async () => {
 
             <div id="events" className="mt-20 space-y-7">
                 <h3>Featured Events</h3>
-
-                <ul className="events">
-                    {events && events.length > 0 && events.map((event: IEvent) => (
-                        <li key={event.title} className="list-none">
-                            <EventCard {...event} />
-                        </li>
-                    ))}
-                </ul>
+                <Suspense fallback={<p className="text-sm text-light-200">Loading events...</p>}>
+                    <EventList events={Array.isArray(events) ? events : []} />
+                </Suspense>
             </div>
         </section>
     )
