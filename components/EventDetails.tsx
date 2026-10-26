@@ -4,13 +4,10 @@ import {IEvent} from "@/database";
 import {getSimilarEventsBySlug} from "@/lib/actions/event.actions";
 import Image from "next/image";
 import BookEvent from "@/components/BookEvent";
+import Registrations from "@/components/Registrations";
 import EventCard from "@/components/EventCard";
 import {cacheLife, cacheTag} from "next/cache";
-import {countBookings} from "@/lib/store";
-
-const BASE_URL = (
-  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-).replace(/\/$/, "");
+import {canSeeRegistrations, canViewEvent, countBookings, getEventBySlug, listBookingEmails} from "@/lib/store";
 
 function bookingLine(count: number) {
     if (count <= 0) return 'Be the first to book your spot!';
@@ -44,41 +41,30 @@ const EventTags = ({ tags }: { tags: string[] }) => (
     </div>
 )
 
-const EventDetails = async ({ params }: { params: Promise<string> }) => {
+const EventDetails = async ({
+    slug,
+    viewerId = '',
+    viewerRole = 'user',
+}: {
+    slug: string;
+    viewerId?: string;
+    viewerRole?: 'user' | 'admin';
+}) => {
     'use cache'
     cacheLife('hours');
-    const slug = await params;
+    cacheTag('events');
     cacheTag(`bookings:${slug}`);
 
-    let event;
-    try {
-        const request = await fetch(`${BASE_URL}/api/events/${slug}`, {
-            next: { revalidate: 60 }
-        });
-
-        if (!request.ok) {
-            if (request.status === 404) {
-                return notFound();
-            }
-            throw new Error(`Failed to fetch event: ${request.statusText}`);
-        }
-
-        const response = await request.json();
-        event = response.event;
-
-        if (!event) {
-            return notFound();
-        }
-    } catch (error) {
-        console.error('Error fetching event:', error);
-        return notFound();
-    }
+    const event = await getEventBySlug(slug);
+    const viewer = viewerId ? { _id: viewerId, role: viewerRole } : null;
+    if (!event || !canViewEvent(event, viewer)) return notFound();
 
     const { description, image, overview, date, time, location, mode, agenda, audience, tags, organizer } = event;
 
     if(!description) return notFound();
 
     const bookings = await countBookings(event._id);
+    const emails = canSeeRegistrations(event, viewer) ? await listBookingEmails(event._id) : [];
 
     const similarEvents: IEvent[] = await getSimilarEventsBySlug(slug);
 
@@ -126,6 +112,10 @@ const EventDetails = async ({ params }: { params: Promise<string> }) => {
                         <p className="text-sm">{bookingLine(bookings)}</p>
 
                         <BookEvent eventId={event._id} slug={event.slug} />
+
+                        {canSeeRegistrations(event, viewer) ? (
+                            <Registrations emails={emails} title={event.title} />
+                        ) : null}
                     </div>
                 </aside>
             </div>

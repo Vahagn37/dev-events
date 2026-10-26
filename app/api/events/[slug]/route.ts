@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEventBySlug } from '@/lib/store';
+import { canViewEvent, getEventBySlug } from '@/lib/store';
+import { currentUser } from '@/lib/session';
 
 type RouteParams = {
   params: Promise<{
@@ -22,7 +23,8 @@ export async function GET(
     }
 
     const event = await getEventBySlug(slug);
-    if (!event) {
+    const user = await currentUser();
+    if (!event || !canViewEvent(event, user)) {
       return NextResponse.json(
         { message: `Event with slug '${slug.trim().toLowerCase()}' not found` },
         { status: 404 },

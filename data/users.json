@@ -1,0 +1,17 @@
+[
+  {
+    "_id": "5c4f584f-b869-4450-9d6d-b419349cc720",
+    "name": "Ada Lovelace",
+    "email": "ada.lovelace@example.com",
+    "passwordHash": "2670919fffe3d823f80d6d2b62a38290:1d45c855078479190b0a24815fb510480941bf2aa12bcc7b5a324199db807bc8",
+    "createdAt": "2026-10-26T16:04:54.578Z"
+  },
+  {
+    "_id": "b27e56a6-2b5c-43ab-8ae3-45a2808a5606",
+    "name": "Vahagn",
+    "email": "777vahagn777@gmail.com",
+    "role": "admin",
+    "passwordHash": "bc4077fa16387f96c0e76a9501ea15bc:da6c145cd9d1d0f4816cabc9ca8a8733e6cd2361572904e6d80dc13511c9e0e8",
+    "createdAt": "2026-10-26T16:08:02.478Z"
+  }
+]

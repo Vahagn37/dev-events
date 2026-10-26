@@ -3,10 +3,16 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
-import { createEvent, listEvents } from '@/lib/store';
+import { createEvent, listPublicEvents } from '@/lib/store';
+import { currentUser } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   try {
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ message: 'Log in to create an event' }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('image');
 
@@ -38,6 +44,7 @@ export async function POST(req: NextRequest) {
       organizer: field(formData, 'organizer'),
       tags,
       agenda,
+      userId: user._id,
     });
 
     if ('error' in result) {
@@ -46,6 +53,8 @@ export async function POST(req: NextRequest) {
 
     revalidateTag('events', 'max');
     revalidatePath('/');
+    revalidatePath('/profile');
+    revalidatePath('/admin');
     return NextResponse.json(
       { message: 'Event created successfully', event: result.event },
       { status: 201 },
@@ -61,7 +70,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
-    const events = await listEvents();
+    const events = await listPublicEvents();
     return NextResponse.json({ message: 'Events fetched successfully', events }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: 'Event fetching failed', error }, { status: 500 });

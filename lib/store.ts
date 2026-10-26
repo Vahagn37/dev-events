@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { IBooking } from '@/database/booking.model';
-import type { IEvent } from '@/database/event.model';
+import type { EventStatus, IEvent } from '@/database/event.model';
 
 const dataDir = path.join(process.cwd(), 'data');
 const eventsPath = path.join(dataDir, 'events.json');
@@ -36,6 +36,7 @@ export type EventInput = {
   organizer: string;
   agenda: string[];
   tags: string[];
+  userId: string;
 };
 
 export type StoreFailure = { error: string; status: number };
@@ -84,6 +85,27 @@ function persist(current: Box) {
   return writeChain;
 }
 
+export function eventStatus(event: IEvent): EventStatus {
+  return event.status ?? 'confirmed';
+}
+
+export function canViewEvent(
+  event: IEvent,
+  viewer: { _id: string; role?: 'user' | 'admin' } | null,
+) {
+  if (eventStatus(event) === 'confirmed') return true;
+  if (!viewer?._id) return false;
+  return viewer.role === 'admin' || viewer._id === event.userId;
+}
+
+export function canSeeRegistrations(
+  event: IEvent,
+  viewer: { _id: string; role?: 'user' | 'admin' } | null,
+) {
+  if (!viewer?._id) return false;
+  return viewer.role === 'admin' || viewer._id === event.userId;
+}
+
 export async function listEvents(): Promise<IEvent[]> {
   const current = await ready();
   return [...(current.events ?? [])].sort((a, b) =>
@@ -91,9 +113,27 @@ export async function listEvents(): Promise<IEvent[]> {
   );
 }
 
+export async function listPublicEvents(): Promise<IEvent[]> {
+  const events = await listEvents();
+  return events.filter((event) => eventStatus(event) === 'confirmed');
+}
+
+export async function listEventsByUser(userId: string): Promise<IEvent[]> {
+  const events = await listEvents();
+  return events.filter((event) => event.userId === userId);
+}
+
 export async function countBookings(eventId: string): Promise<number> {
   const current = await ready();
   return (current.bookings ?? []).filter((booking) => booking.eventId === eventId).length;
+}
+
+export async function listBookingEmails(eventId: string): Promise<string[]> {
+  const current = await ready();
+  return (current.bookings ?? [])
+    .filter((booking) => booking.eventId === eventId)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((booking) => booking.email);
 }
 
 export async function getEventBySlug(slug: string): Promise<IEvent | null> {
@@ -110,8 +150,20 @@ export async function similarEvents(slug: string): Promise<IEvent[]> {
   if (!event) return [];
   return (current.events ?? []).filter(
     (item) =>
-      item._id !== event._id && item.tags.some((tag) => event.tags.includes(tag)),
+      item._id !== event._id &&
+      eventStatus(item) === 'confirmed' &&
+      item.tags.some((tag) => event.tags.includes(tag)),
   );
+}
+
+export async function setEventStatus(id: string, status: EventStatus): Promise<IEvent | null> {
+  const current = await ready();
+  const event = current.events?.find((item) => item._id === id);
+  if (!event) return null;
+  event.status = status;
+  event.updatedAt = new Date().toISOString();
+  await persist(current);
+  return event;
 }
 
 export async function createEvent(
@@ -180,6 +232,8 @@ export async function createEvent(
     agenda,
     organizer,
     tags,
+    userId: input.userId,
+    status: 'pending',
     createdAt: now,
     updatedAt: now,
   };

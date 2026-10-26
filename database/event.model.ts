@@ -1,3 +1,5 @@
+export type EventStatus = 'pending' | 'confirmed' | 'rejected';
+
 export interface IEvent {
   _id: string;
   title: string;
@@ -14,6 +16,8 @@ export interface IEvent {
   agenda: string[];
   organizer: string;
   tags: string[];
+  userId?: string;
+  status?: EventStatus;
   createdAt: string;
   updatedAt: string;
 }

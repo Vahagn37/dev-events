@@ -1,5 +1,30 @@
 [
   {
+    "_id": "fb53b565-56a3-4620-b76f-d60e569ffd55",
+    "title": "Voluptatem consequatur In quis provident",
+    "slug": "voluptatem-consequatur-in-quis-provident",
+    "description": "Sed dignissimos voluptas natus dolor fugiat incidunt proident iusto culpa et voluptatem",
+    "overview": "Mollitia architecto voluptas quis est",
+    "image": "/uploads/decc2264-1965-478b-a964-1344ff57e6ae.webp",
+    "venue": "Optio non dolor est",
+    "location": "Est fugiat doloribus",
+    "date": "1977-08-20",
+    "time": "00:20",
+    "mode": "offline",
+    "audience": "Amet dolores consec",
+    "agenda": [
+      "Non et porro quibusd"
+    ],
+    "organizer": "Enim debitis duis id",
+    "tags": [
+      "Adipisicing cupidita"
+    ],
+    "userId": "b27e56a6-2b5c-43ab-8ae3-45a2808a5606",
+    "createdAt": "2026-10-26T16:41:08.593Z",
+    "updatedAt": "2026-10-26T17:13:42.493Z",
+    "status": "confirmed"
+  },
+  {
     "_id": "15ca5a8c-3116-46f5-a5a6-944b83d8d4fd",
     "title": "Rerum exercitationem odit omnis repellendus Lorem tempore",
     "slug": "rerum-exercitationem-odit-omnis-repellendus-lorem-tempore",
@@ -20,7 +45,8 @@
       "Dolore qui nisi quia"
     ],
     "createdAt": "2026-10-26T14:57:05.485Z",
-    "updatedAt": "2026-10-26T14:57:05.485Z"
+    "updatedAt": "2026-10-26T16:58:04.900Z",
+    "status": "confirmed"
   },
   {
     "_id": "a0127664-c22e-4859-bbfc-a91dc0f5fa27",
@@ -43,7 +69,8 @@
       "Dolore ipsum ea aut"
     ],
     "createdAt": "2026-10-26T14:42:26.574Z",
-    "updatedAt": "2026-10-26T14:42:26.574Z"
+    "updatedAt": "2026-10-26T16:58:04.161Z",
+    "status": "confirmed"
   },
   {
     "_id": "evt-react-summit",
@@ -69,7 +96,8 @@
       "javascript"
     ],
     "createdAt": "2026-01-06T12:00:00.000Z",
-    "updatedAt": "2026-01-06T12:00:00.000Z"
+    "updatedAt": "2026-10-26T16:58:02.435Z",
+    "status": "confirmed"
   },
   {
     "_id": "evt-kubecon",
@@ -95,7 +123,8 @@
       "cloud"
     ],
     "createdAt": "2026-01-05T12:00:00.000Z",
-    "updatedAt": "2026-01-05T12:00:00.000Z"
+    "updatedAt": "2026-10-26T16:58:02.986Z",
+    "status": "confirmed"
   },
   {
     "_id": "evt-aws-reinvent",
@@ -121,7 +150,8 @@
       "cloud"
     ],
     "createdAt": "2026-01-04T12:00:00.000Z",
-    "updatedAt": "2026-01-04T12:00:00.000Z"
+    "updatedAt": "2026-10-26T16:58:00.338Z",
+    "status": "confirmed"
   },
   {
     "_id": "evt-nextjs-conf",
@@ -147,7 +177,8 @@
       "javascript"
     ],
     "createdAt": "2026-01-03T12:00:00.000Z",
-    "updatedAt": "2026-01-03T12:00:00.000Z"
+    "updatedAt": "2026-10-26T16:57:59.776Z",
+    "status": "confirmed"
   },
   {
     "_id": "evt-google-cloud-next",
@@ -173,7 +204,8 @@
       "cloud"
     ],
     "createdAt": "2026-01-02T12:00:00.000Z",
-    "updatedAt": "2026-01-02T12:00:00.000Z"
+    "updatedAt": "2026-10-26T16:57:58.824Z",
+    "status": "confirmed"
   },
   {
     "_id": "evt-ethglobal",
@@ -199,6 +231,7 @@
       "hackathon"
     ],
     "createdAt": "2026-01-01T12:00:00.000Z",
-    "updatedAt": "2026-01-01T12:00:00.000Z"
+    "updatedAt": "2026-10-26T16:57:58.131Z",
+    "status": "confirmed"
   }
 ]

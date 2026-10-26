@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import NavAccount from "@/components/NavAccount";
 
 const Navbar = () => {
     return (
@@ -13,8 +15,10 @@ const Navbar = () => {
 
                 <ul>
                     <li><Link href="/">Home</Link></li>
-                    <li><Link href="/#events">Events</Link></li>
                     <li><Link href="/events/new">Create Event</Link></li>
+                    <Suspense fallback={null}>
+                        <NavAccount />
+                    </Suspense>
                 </ul>
             </nav>
         </header>

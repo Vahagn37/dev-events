@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Schibsted_Grotesk, Martian_Mono } from "next/font/google";
 import "./globals.css";
+import { AccountProvider } from "@/components/AccountProvider";
 import LightRays from "@/components/LightRays";
 import Navbar from "@/components/Navbar";
 
@@ -30,6 +31,7 @@ export default function RootLayout({
         className={`${schibstedGrotesk.variable} ${martianMono.variable} min-h-screen antialiased`}
         suppressHydrationWarning
       >
+      <AccountProvider>
       <Navbar />
 
           <div className="absolute inset-0 top-0 z-[-1] min-h-screen">
@@ -49,6 +51,7 @@ export default function RootLayout({
           <main>
             {children}
           </main>
+      </AccountProvider>
       </body>
     </html>
   );

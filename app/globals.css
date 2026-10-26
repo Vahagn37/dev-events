@@ -165,6 +165,10 @@
         ul {
             @apply flex list-none flex-row items-center gap-6;
         }
+
+        button {
+            @apply cursor-pointer bg-transparent p-0 text-inherit;
+        }
     }
 
     .events {
@@ -251,6 +255,54 @@
         @apply bg-dark-100 text-light-100 text-xs rounded-[6px] px-5 py-2;
     }
 
+    button.registrations-open,
+    #admin button.registrations-open,
+    #profile button.registrations-open,
+    #event button.registrations-open {
+        @apply w-fit cursor-pointer border-0 bg-transparent p-0 text-sm font-semibold text-white shadow-none outline-none;
+    }
+
+    button.registrations-open:hover,
+    #admin button.registrations-open:hover,
+    #profile button.registrations-open:hover,
+    #event button.registrations-open:hover {
+        @apply text-white/70;
+    }
+
+    .registrations-dialog {
+        @apply m-auto w-[min(100%-2rem,28rem)] max-w-none border-0 bg-transparent p-0 text-foreground;
+
+        &::backdrop {
+            background: rgba(3, 7, 8, 0.72);
+        }
+
+        .panel {
+            @apply bg-dark-100 flex max-h-[70vh] flex-col gap-4 rounded-[10px] border border-white/10 p-6;
+        }
+
+        h3 {
+            @apply font-schibsted-grotesk text-2xl font-bold;
+        }
+
+        .event-title {
+            @apply text-sm text-light-200;
+        }
+
+        ul {
+            @apply m-0 flex list-none flex-col gap-2 overflow-y-auto p-0;
+        }
+
+        li, .panel > p {
+            @apply break-all text-sm text-light-100;
+        }
+    }
+
+    button.registrations-close,
+    #admin button.registrations-close,
+    #event button.registrations-close {
+        @apply bg-primary hover:bg-primary/90 w-fit cursor-pointer rounded-[6px] px-4 py-2 text-sm font-semibold text-black;
+    }
+
     #event-filters {
         @apply flex w-full min-w-0 flex-nowrap items-start gap-4;
 
@@ -327,8 +379,64 @@
         @apply text-sm text-light-100;
     }
 
-    #create-event {
+    #profile {
+        @apply flex flex-col gap-3;
+
+        .email {
+            @apply text-light-200;
+        }
+
+        .empty a {
+            @apply text-primary;
+        }
+
+        .status {
+            @apply text-sm capitalize text-light-200;
+        }
+    }
+
+    #admin {
+        @apply flex flex-col gap-8;
+
+        .event {
+            @apply flex flex-col gap-3 border-b border-white/10 py-5 sm:flex-row sm:items-center sm:justify-between;
+        }
+
+        .meta {
+            @apply text-sm text-light-200;
+        }
+
+        .status {
+            @apply capitalize;
+        }
+
+        .actions {
+            @apply flex gap-3;
+        }
+
+        button {
+            @apply bg-primary hover:bg-primary/90 cursor-pointer rounded-[6px] px-4 py-2 text-sm font-semibold text-black;
+        }
+
+        button.reject {
+            @apply bg-transparent text-white;
+        }
+
+        button:disabled {
+            @apply cursor-default opacity-40;
+        }
+    }
+
+    #create-event, #account {
         @apply mx-auto flex w-full max-w-2xl flex-col gap-8;
+
+        .switch {
+            @apply text-sm text-light-100;
+
+            a {
+                @apply text-primary;
+            }
+        }
 
         form {
             @apply flex flex-col gap-5;

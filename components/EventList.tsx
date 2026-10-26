@@ -1,11 +1,43 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { IEvent } from '@/database';
 import EventCard from '@/components/EventCard';
 import { filterEvents, readMode, readWhen } from '@/lib/filter-events';
 import { readSort, sortEvents } from '@/lib/sort-events';
+
+const filterKeys = ['q', 'when', 'mode', 'sort'] as const;
+
+let homeLeft = false;
+let homeInstances = 0;
+let historyPatched = false;
+
+function discardHomeFilters() {
+  if (window.location.pathname !== '/') return;
+  const url = new URL(window.location.href);
+  const hadQuery = filterKeys.some((key) => url.searchParams.has(key));
+  for (const key of filterKeys) url.searchParams.delete(key);
+  const state = window.history.state as {
+    __PRIVATE_NEXTJS_INTERNALS_TREE?: { renderedSearch?: string };
+  } | null;
+  const internals = state?.__PRIVATE_NEXTJS_INTERNALS_TREE;
+  const hadRendered = Boolean(internals?.renderedSearch);
+  if (!hadQuery && !hadRendered) return;
+  if (internals) internals.renderedSearch = '';
+  const hash = url.hash === '#events' ? '#events' : '';
+  window.history.replaceState(state, '', `${url.pathname}${url.search}${hash}`);
+}
+
+function rememberHomeFiltersOnLeave() {
+  if (historyPatched) return;
+  historyPatched = true;
+  const pushState = window.history.pushState.bind(window.history);
+  window.history.pushState = function (data, unused, url) {
+    if (window.location.pathname === '/') discardHomeFilters();
+    return pushState(data, unused, url);
+  };
+}
 
 function localToday() {
   const now = new Date();
@@ -18,17 +50,41 @@ export default function EventList({ events }: { events: IEvent[] }) {
   const pathname = usePathname();
   const params = useSearchParams();
   const [ready, setReady] = useState(false);
-  const [queryText, setQueryText] = useState(params.get('q') ?? '');
-  const [when, setWhen] = useState(() => readWhen(params.get('when')));
-  const [mode, setMode] = useState(() => readMode(params.get('mode')));
-  const [sort, setSort] = useState(() => readSort(params.get('sort')));
-  const paramsRef = useRef(new URLSearchParams(params.toString()));
+  const [queryText, setQueryText] = useState(() => (homeLeft ? '' : (params.get('q') ?? '')));
+  const [when, setWhen] = useState(() => (homeLeft ? 'all' : readWhen(params.get('when'))));
+  const [mode, setMode] = useState(() => (homeLeft ? 'all' : readMode(params.get('mode'))));
+  const [sort, setSort] = useState(() => (homeLeft ? 'soonest' : readSort(params.get('sort'))));
+  const paramsRef = useRef(homeLeft ? new URLSearchParams() : new URLSearchParams(params.toString()));
   const replaceTimer = useRef<number | null>(null);
   const needle = queryText.trim().toLowerCase();
   const datePending = !ready && when !== 'all';
 
   useEffect(() => {
     setReady(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    rememberHomeFiltersOnLeave();
+    if (homeLeft) {
+      paramsRef.current = new URLSearchParams();
+      setQueryText('');
+      setWhen('all');
+      setMode('all');
+      setSort('soonest');
+      discardHomeFilters();
+      queueMicrotask(() => {
+        homeLeft = false;
+      });
+    }
+    homeInstances += 1;
+    return () => {
+      if (replaceTimer.current) window.clearTimeout(replaceTimer.current);
+      homeInstances -= 1;
+      const remaining = homeInstances;
+      queueMicrotask(() => {
+        if (homeInstances === remaining && homeInstances === 0) homeLeft = true;
+      });
+    };
   }, []);
 
   useEffect(() => {
