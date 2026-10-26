@@ -1,9 +1,11 @@
 'use client';
 
 import {useState} from "react";
+import {useRouter} from "next/navigation";
 import {createBooking} from "@/lib/actions/booking.actions";
 
 const BookEvent = ({ eventId, slug }: { eventId: string, slug: string;}) => {
+    const router = useRouter();
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
@@ -19,6 +21,7 @@ const BookEvent = ({ eventId, slug }: { eventId: string, slug: string;}) => {
 
             if (success) {
                 setSubmitted(true);
+                router.refresh();
             } else {
                 setMessage(errorMessage ?? 'Could not book this event');
             }

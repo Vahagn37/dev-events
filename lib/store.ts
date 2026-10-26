@@ -91,6 +91,11 @@ export async function listEvents(): Promise<IEvent[]> {
   );
 }
 
+export async function countBookings(eventId: string): Promise<number> {
+  const current = await ready();
+  return (current.bookings ?? []).filter((booking) => booking.eventId === eventId).length;
+}
+
 export async function getEventBySlug(slug: string): Promise<IEvent | null> {
   const current = await ready();
   return (

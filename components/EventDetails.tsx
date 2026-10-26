@@ -5,11 +5,18 @@ import {getSimilarEventsBySlug} from "@/lib/actions/event.actions";
 import Image from "next/image";
 import BookEvent from "@/components/BookEvent";
 import EventCard from "@/components/EventCard";
-import {cacheLife} from "next/cache";
+import {cacheLife, cacheTag} from "next/cache";
+import {countBookings} from "@/lib/store";
 
 const BASE_URL = (
   process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
 ).replace(/\/$/, "");
+
+function bookingLine(count: number) {
+    if (count <= 0) return 'Be the first to book your spot!';
+    if (count === 1) return 'Join 1 person who has already booked their spot!';
+    return `Join ${count} people who have already booked their spot!`;
+}
 
 const EventDetailItem = ({ icon, alt, label }: { icon: string; alt: string; label: string; }) => (
     <div className="flex-row-gap-2 items-center">
@@ -41,6 +48,7 @@ const EventDetails = async ({ params }: { params: Promise<string> }) => {
     'use cache'
     cacheLife('hours');
     const slug = await params;
+    cacheTag(`bookings:${slug}`);
 
     let event;
     try {
@@ -70,7 +78,7 @@ const EventDetails = async ({ params }: { params: Promise<string> }) => {
 
     if(!description) return notFound();
 
-    const bookings = 10;
+    const bookings = await countBookings(event._id);
 
     const similarEvents: IEvent[] = await getSimilarEventsBySlug(slug);
 
@@ -115,13 +123,7 @@ const EventDetails = async ({ params }: { params: Promise<string> }) => {
                 <aside className="booking">
                     <div className="signup-card">
                         <h2>Book Your Spot</h2>
-                        {bookings > 0 ? (
-                            <p className="text-sm">
-                                Join {bookings} people who have already booked their spot!
-                            </p>
-                        ): (
-                            <p className="text-sm">Be the first to book your spot!</p>
-                        )}
+                        <p className="text-sm">{bookingLine(bookings)}</p>
 
                         <BookEvent eventId={event._id} slug={event.slug} />
                     </div>

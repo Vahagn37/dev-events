@@ -1,5 +1,28 @@
 [
   {
+    "_id": "15ca5a8c-3116-46f5-a5a6-944b83d8d4fd",
+    "title": "Rerum exercitationem odit omnis repellendus Lorem tempore",
+    "slug": "rerum-exercitationem-odit-omnis-repellendus-lorem-tempore",
+    "description": "Atque porro cum cupiditate est do ut reiciendis quasi vel quaerat soluta expedita totam obcaecati hic qui",
+    "overview": "Qui ut laboriosam qui deserunt est quo cum culpa doloribus dolore ducimus illo repellendus",
+    "image": "/uploads/61c9a104-90c2-438c-b918-22c00c51bf2b.png",
+    "venue": "Aut possimus iure e",
+    "location": "Architecto et eos no",
+    "date": "1975-02-07",
+    "time": "18:00",
+    "mode": "hybrid",
+    "audience": "Fugit sint dolores",
+    "agenda": [
+      "Eveniet est cumque"
+    ],
+    "organizer": "Ducimus et est des",
+    "tags": [
+      "Dolore qui nisi quia"
+    ],
+    "createdAt": "2026-10-26T14:57:05.485Z",
+    "updatedAt": "2026-10-26T14:57:05.485Z"
+  },
+  {
     "_id": "a0127664-c22e-4859-bbfc-a91dc0f5fa27",
     "title": "Mollitia doloribus reiciendis quis incidunt aliquid eius id rerum occaecat placeat qui vero facil",
     "slug": "mollitia-doloribus-reiciendis-quis-incidunt-aliquid-eius-id-rerum-occaecat-placeat-qui-vero-facil",

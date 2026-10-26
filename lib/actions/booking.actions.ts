@@ -1,5 +1,6 @@
 'use server';
 
+import { updateTag } from 'next/cache';
 import { createBooking as saveBooking } from '@/lib/store';
 
 export const createBooking = async ({
@@ -16,6 +17,7 @@ export const createBooking = async ({
     if ('error' in result) {
       return { success: false, message: result.error };
     }
+    updateTag(`bookings:${slug}`);
     return { success: true };
   } catch (error) {
     console.error('create booking failed', error);
