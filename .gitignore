@@ -43,3 +43,7 @@ next-env.d.ts
 # uploaded event images
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# local sqlite database
+/data/*.db
+/data/*.db-*

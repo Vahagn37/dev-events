@@ -1,26 +1,13 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import type { IBooking } from '@/database/booking.model';
-import type { EventStatus, IEvent } from '@/database/event.model';
-
-const dataDir = path.join(process.cwd(), 'data');
-const eventsPath = path.join(dataDir, 'events.json');
-const bookingsPath = path.join(dataDir, 'bookings.json');
-
-type Box = {
-  events?: IEvent[];
-  bookings?: IBooking[];
-  ready?: Promise<void>;
-};
-
-const registry = globalThis as typeof globalThis & { __devEvents?: Box };
+import { and, asc, desc, eq } from 'drizzle-orm';
+import type { IEvent } from '@/database';
+import type { EventStatus } from '@/database/event.model';
+import { bookings, events } from '@/database/schema';
+import { db, readyDb } from '@/lib/db';
 
 const modes = new Set(['online', 'offline', 'hybrid']);
 const emailPattern =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
-let writeChain = Promise.resolve();
 
 export type EventInput = {
   title: string;
@@ -41,48 +28,30 @@ export type EventInput = {
 
 export type StoreFailure = { error: string; status: number };
 
-function box(): Box {
-  registry.__devEvents ??= {};
-  return registry.__devEvents;
-}
+type EventRow = typeof events.$inferSelect;
 
-async function load(current: Box) {
-  await mkdir(dataDir, { recursive: true });
-  current.events = await readJson<IEvent[]>(eventsPath, []);
-  current.bookings = await readJson<IBooking[]>(bookingsPath, []);
-}
-
-async function readJson<T>(filePath: string, fallback: T): Promise<T> {
-  try {
-    const text = await readFile(filePath, 'utf8');
-    return JSON.parse(text) as T;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return fallback;
-    throw error;
-  }
-}
-
-async function ready() {
-  const current = box();
-  if (current.events && current.bookings) return current;
-  current.ready ??= load(current).finally(() => {
-    current.ready = undefined;
-  });
-  await current.ready;
-  return current;
-}
-
-function persist(current: Box) {
-  writeChain = writeChain
-    .then(async () => {
-      await mkdir(dataDir, { recursive: true });
-      await writeFile(eventsPath, JSON.stringify(current.events, null, 2));
-      await writeFile(bookingsPath, JSON.stringify(current.bookings, null, 2));
-    })
-    .catch((error) => {
-      console.error('failed to write event store', error);
-    });
-  return writeChain;
+function toEvent(row: EventRow): IEvent {
+  return {
+    _id: row.id,
+    title: row.title,
+    slug: row.slug,
+    description: row.description,
+    overview: row.overview,
+    image: row.image,
+    venue: row.venue,
+    location: row.location,
+    date: row.date,
+    time: row.time,
+    mode: row.mode,
+    audience: row.audience,
+    agenda: row.agenda,
+    organizer: row.organizer,
+    tags: row.tags,
+    userId: row.userId ?? undefined,
+    status: row.status ?? undefined,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
 }
 
 export function eventStatus(event: IEvent): EventStatus {
@@ -107,48 +76,57 @@ export function canSeeRegistrations(
 }
 
 export async function listEvents(): Promise<IEvent[]> {
-  const current = await ready();
-  return [...(current.events ?? [])].sort((a, b) =>
-    b.createdAt.localeCompare(a.createdAt),
-  );
+  await readyDb();
+  return db().select().from(events).orderBy(desc(events.createdAt)).all().map(toEvent);
 }
 
 export async function listPublicEvents(): Promise<IEvent[]> {
-  const events = await listEvents();
-  return events.filter((event) => eventStatus(event) === 'confirmed');
+  const rows = await listEvents();
+  return rows.filter((event) => eventStatus(event) === 'confirmed');
 }
 
 export async function listEventsByUser(userId: string): Promise<IEvent[]> {
-  const events = await listEvents();
-  return events.filter((event) => event.userId === userId);
+  await readyDb();
+  return db()
+    .select()
+    .from(events)
+    .where(eq(events.userId, userId))
+    .orderBy(desc(events.createdAt))
+    .all()
+    .map(toEvent);
 }
 
 export async function countBookings(eventId: string): Promise<number> {
-  const current = await ready();
-  return (current.bookings ?? []).filter((booking) => booking.eventId === eventId).length;
+  await readyDb();
+  return db().select().from(bookings).where(eq(bookings.eventId, eventId)).all().length;
 }
 
 export async function listBookingEmails(eventId: string): Promise<string[]> {
-  const current = await ready();
-  return (current.bookings ?? [])
-    .filter((booking) => booking.eventId === eventId)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+  await readyDb();
+  return db()
+    .select({ email: bookings.email })
+    .from(bookings)
+    .where(eq(bookings.eventId, eventId))
+    .orderBy(asc(bookings.createdAt))
+    .all()
     .map((booking) => booking.email);
 }
 
 export async function getEventBySlug(slug: string): Promise<IEvent | null> {
-  const current = await ready();
-  return (
-    current.events?.find((event) => event.slug === slug.trim().toLowerCase()) ??
-    null
-  );
+  await readyDb();
+  const row = db()
+    .select()
+    .from(events)
+    .where(eq(events.slug, slug.trim().toLowerCase()))
+    .get();
+  return row ? toEvent(row) : null;
 }
 
 export async function similarEvents(slug: string): Promise<IEvent[]> {
-  const current = await ready();
-  const event = current.events?.find((item) => item.slug === slug);
+  const event = await getEventBySlug(slug);
   if (!event) return [];
-  return (current.events ?? []).filter(
+  const rows = await listEvents();
+  return rows.filter(
     (item) =>
       item._id !== event._id &&
       eventStatus(item) === 'confirmed' &&
@@ -157,19 +135,18 @@ export async function similarEvents(slug: string): Promise<IEvent[]> {
 }
 
 export async function setEventStatus(id: string, status: EventStatus): Promise<IEvent | null> {
-  const current = await ready();
-  const event = current.events?.find((item) => item._id === id);
-  if (!event) return null;
-  event.status = status;
-  event.updatedAt = new Date().toISOString();
-  await persist(current);
-  return event;
+  await readyDb();
+  const existing = db().select().from(events).where(eq(events.id, id)).get();
+  if (!existing) return null;
+  const updatedAt = new Date().toISOString();
+  db().update(events).set({ status, updatedAt }).where(eq(events.id, id)).run();
+  return toEvent({ ...existing, status, updatedAt });
 }
 
 export async function createEvent(
   input: EventInput,
 ): Promise<{ event: IEvent } | StoreFailure> {
-  const current = await ready();
+  await readyDb();
   const title = input.title.trim();
   const description = input.description.trim();
   const overview = input.overview.trim();
@@ -211,9 +188,8 @@ export async function createEvent(
 
   const slug = generateSlug(title);
   if (!slug) return { error: 'Title is required', status: 400 };
-  if (current.events?.some((event) => event.slug === slug)) {
-    return { error: 'An event with this title already exists', status: 400 };
-  }
+  const duplicate = db().select({ id: events.id }).from(events).where(eq(events.slug, slug)).get();
+  if (duplicate) return { error: 'An event with this title already exists', status: 400 };
 
   const now = new Date().toISOString();
   const event: IEvent = {
@@ -237,8 +213,30 @@ export async function createEvent(
     createdAt: now,
     updatedAt: now,
   };
-  current.events?.unshift(event);
-  await persist(current);
+  db()
+    .insert(events)
+    .values({
+      id: event._id,
+      title,
+      slug,
+      description,
+      overview,
+      image: event.image,
+      venue,
+      location,
+      date,
+      time,
+      mode,
+      audience,
+      agenda,
+      organizer,
+      tags,
+      userId: input.userId,
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    })
+    .run();
   return { event };
 }
 
@@ -247,32 +245,36 @@ export async function createBooking(input: {
   slug: string;
   email: string;
 }): Promise<{ success: true } | StoreFailure> {
-  const current = await ready();
+  await readyDb();
   const email = input.email.trim().toLowerCase();
-  const event = current.events?.find(
-    (item) => item._id === input.eventId || item.slug === input.slug,
-  );
+  const event =
+    db().select().from(events).where(eq(events.id, input.eventId)).get() ??
+    db().select().from(events).where(eq(events.slug, input.slug)).get();
   if (!event) return { error: 'Event not found', status: 404 };
   if (!emailPattern.test(email)) {
     return { error: 'Please provide a valid email address', status: 400 };
   }
-  const duplicate = current.bookings?.some(
-    (booking) => booking.eventId === event._id && booking.email === email,
-  );
+  const duplicate = db()
+    .select({ id: bookings.id })
+    .from(bookings)
+    .where(and(eq(bookings.eventId, event.id), eq(bookings.email, email)))
+    .get();
   if (duplicate) {
     return { error: 'This email is already booked for the event', status: 409 };
   }
 
   const now = new Date().toISOString();
-  current.bookings?.unshift({
-    _id: randomUUID(),
-    eventId: event._id,
-    slug: event.slug,
-    email,
-    createdAt: now,
-    updatedAt: now,
-  });
-  await persist(current);
+  db()
+    .insert(bookings)
+    .values({
+      id: randomUUID(),
+      eventId: event.id,
+      slug: event.slug,
+      email,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .run();
   return { success: true };
 }
 
