@@ -1,33 +1,20 @@
 import { randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
 import type { PublicUser } from '@/database';
-import type { UserRole } from '@/database/user.model';
-import { users } from '@/database/schema';
 import { db, readyDb } from '@/lib/db';
 import { hashPassword, verifyPassword } from '@/lib/passwords';
 
 const emailPattern =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
-type UserRow = typeof users.$inferSelect;
-
-function publish(user: UserRow): PublicUser {
-  return {
-    _id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role === 'admin' ? 'admin' : 'user',
-  };
-}
-
 export async function listUsers(): Promise<PublicUser[]> {
   await readyDb();
-  return db().select().from(users).all().map(publish);
+  const rows = await db().user.findMany();
+  return rows.map(publish);
 }
 
 export async function findUser(id: string) {
   await readyDb();
-  const user = db().select().from(users).where(eq(users.id, id)).get();
+  const user = await db().user.findUnique({ where: { id } });
   return user ? publish(user) : null;
 }
 
@@ -44,29 +31,34 @@ export async function registerUser(input: {
   if (!name || name.length > 80) return { error: 'Name is required' };
   if (!emailPattern.test(email)) return { error: 'Enter a valid email address' };
   if (password.length < 8) return { error: 'Password must be at least 8 characters' };
-  const existing = db().select({ id: users.id }).from(users).where(eq(users.email, email)).get();
+  const existing = await db().user.findUnique({ where: { email }, select: { id: true } });
   if (existing) return { error: 'An account with this email already exists' };
 
-  const role: UserRole = 'user';
-  const user = {
-    id: randomUUID(),
-    name,
-    email,
-    passwordHash: await hashPassword(password),
-    role,
-    createdAt: new Date().toISOString(),
-  };
-  db().insert(users).values(user).run();
+  const user = await db().user.create({
+    data: {
+      id: randomUUID(),
+      name,
+      email,
+      passwordHash: await hashPassword(password),
+      role: 'user',
+      createdAt: new Date().toISOString(),
+    },
+  });
   return { user: publish(user) };
 }
 
 export async function authenticate(email: string, password: string) {
   await readyDb();
-  const user = db()
-    .select()
-    .from(users)
-    .where(eq(users.email, email.trim().toLowerCase()))
-    .get();
+  const user = await db().user.findUnique({ where: { email: email.trim().toLowerCase() } });
   if (!user || !(await verifyPassword(password, user.passwordHash))) return null;
   return publish(user);
+}
+
+function publish(user: { id: string; name: string; email: string; role: string | null }): PublicUser {
+  return {
+    _id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role === 'admin' ? 'admin' : 'user',
+  };
 }

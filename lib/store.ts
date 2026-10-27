@@ -1,8 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { and, asc, desc, eq } from 'drizzle-orm';
+import type { Prisma } from '@prisma/client';
 import type { IEvent } from '@/database';
 import type { EventStatus } from '@/database/event.model';
-import { bookings, events } from '@/database/schema';
 import { db, readyDb } from '@/lib/db';
 
 const modes = new Set(['online', 'offline', 'hybrid']);
@@ -28,7 +27,11 @@ export type EventInput = {
 
 export type StoreFailure = { error: string; status: number };
 
-type EventRow = typeof events.$inferSelect;
+type EventRow = Prisma.EventGetPayload<Record<string, never>>;
+
+function strings(value: Prisma.JsonValue): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
 
 function toEvent(row: EventRow): IEvent {
   return {
@@ -44,11 +47,11 @@ function toEvent(row: EventRow): IEvent {
     time: row.time,
     mode: row.mode,
     audience: row.audience,
-    agenda: row.agenda,
+    agenda: strings(row.agenda),
     organizer: row.organizer,
-    tags: row.tags,
+    tags: strings(row.tags),
     userId: row.userId ?? undefined,
-    status: row.status ?? undefined,
+    status: (row.status ?? undefined) as EventStatus | undefined,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -77,7 +80,8 @@ export function canSeeRegistrations(
 
 export async function listEvents(): Promise<IEvent[]> {
   await readyDb();
-  return db().select().from(events).orderBy(desc(events.createdAt)).all().map(toEvent);
+  const rows = await db().event.findMany({ orderBy: { createdAt: 'desc' } });
+  return rows.map(toEvent);
 }
 
 export async function listPublicEvents(): Promise<IEvent[]> {
@@ -87,38 +91,31 @@ export async function listPublicEvents(): Promise<IEvent[]> {
 
 export async function listEventsByUser(userId: string): Promise<IEvent[]> {
   await readyDb();
-  return db()
-    .select()
-    .from(events)
-    .where(eq(events.userId, userId))
-    .orderBy(desc(events.createdAt))
-    .all()
-    .map(toEvent);
+  const rows = await db().event.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  });
+  return rows.map(toEvent);
 }
 
 export async function countBookings(eventId: string): Promise<number> {
   await readyDb();
-  return db().select().from(bookings).where(eq(bookings.eventId, eventId)).all().length;
+  return db().booking.count({ where: { eventId } });
 }
 
 export async function listBookingEmails(eventId: string): Promise<string[]> {
   await readyDb();
-  return db()
-    .select({ email: bookings.email })
-    .from(bookings)
-    .where(eq(bookings.eventId, eventId))
-    .orderBy(asc(bookings.createdAt))
-    .all()
-    .map((booking) => booking.email);
+  const rows = await db().booking.findMany({
+    where: { eventId },
+    orderBy: { createdAt: 'asc' },
+    select: { email: true },
+  });
+  return rows.map((booking) => booking.email);
 }
 
 export async function getEventBySlug(slug: string): Promise<IEvent | null> {
   await readyDb();
-  const row = db()
-    .select()
-    .from(events)
-    .where(eq(events.slug, slug.trim().toLowerCase()))
-    .get();
+  const row = await db().event.findUnique({ where: { slug: slug.trim().toLowerCase() } });
   return row ? toEvent(row) : null;
 }
 
@@ -136,11 +133,13 @@ export async function similarEvents(slug: string): Promise<IEvent[]> {
 
 export async function setEventStatus(id: string, status: EventStatus): Promise<IEvent | null> {
   await readyDb();
-  const existing = db().select().from(events).where(eq(events.id, id)).get();
+  const existing = await db().event.findUnique({ where: { id } });
   if (!existing) return null;
-  const updatedAt = new Date().toISOString();
-  db().update(events).set({ status, updatedAt }).where(eq(events.id, id)).run();
-  return toEvent({ ...existing, status, updatedAt });
+  const row = await db().event.update({
+    where: { id },
+    data: { status, updatedAt: new Date().toISOString() },
+  });
+  return toEvent(row);
 }
 
 export async function createEvent(
@@ -188,40 +187,18 @@ export async function createEvent(
 
   const slug = generateSlug(title);
   if (!slug) return { error: 'Title is required', status: 400 };
-  const duplicate = db().select({ id: events.id }).from(events).where(eq(events.slug, slug)).get();
+  const duplicate = await db().event.findUnique({ where: { slug }, select: { id: true } });
   if (duplicate) return { error: 'An event with this title already exists', status: 400 };
 
   const now = new Date().toISOString();
-  const event: IEvent = {
-    _id: randomUUID(),
-    title,
-    slug,
-    description,
-    overview,
-    image: input.image.trim(),
-    venue,
-    location,
-    date,
-    time,
-    mode,
-    audience,
-    agenda,
-    organizer,
-    tags,
-    userId: input.userId,
-    status: 'pending',
-    createdAt: now,
-    updatedAt: now,
-  };
-  db()
-    .insert(events)
-    .values({
-      id: event._id,
+  const row = await db().event.create({
+    data: {
+      id: randomUUID(),
       title,
       slug,
       description,
       overview,
-      image: event.image,
+      image: input.image.trim(),
       venue,
       location,
       date,
@@ -235,9 +212,9 @@ export async function createEvent(
       status: 'pending',
       createdAt: now,
       updatedAt: now,
-    })
-    .run();
-  return { event };
+    },
+  });
+  return { event: toEvent(row) };
 }
 
 export async function createBooking(input: {
@@ -247,34 +224,32 @@ export async function createBooking(input: {
 }): Promise<{ success: true } | StoreFailure> {
   await readyDb();
   const email = input.email.trim().toLowerCase();
-  const event =
-    db().select().from(events).where(eq(events.id, input.eventId)).get() ??
-    db().select().from(events).where(eq(events.slug, input.slug)).get();
+  const event = await db().event.findFirst({
+    where: { OR: [{ id: input.eventId }, { slug: input.slug }] },
+  });
   if (!event) return { error: 'Event not found', status: 404 };
   if (!emailPattern.test(email)) {
     return { error: 'Please provide a valid email address', status: 400 };
   }
-  const duplicate = db()
-    .select({ id: bookings.id })
-    .from(bookings)
-    .where(and(eq(bookings.eventId, event.id), eq(bookings.email, email)))
-    .get();
+  const duplicate = await db().booking.findFirst({
+    where: { eventId: event.id, email },
+    select: { id: true },
+  });
   if (duplicate) {
     return { error: 'This email is already booked for the event', status: 409 };
   }
 
   const now = new Date().toISOString();
-  db()
-    .insert(bookings)
-    .values({
+  await db().booking.create({
+    data: {
       id: randomUUID(),
       eventId: event.id,
       slug: event.slug,
       email,
       createdAt: now,
       updatedAt: now,
-    })
-    .run();
+    },
+  });
   return { success: true };
 }
 
