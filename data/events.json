@@ -1,0 +1,164 @@
+[
+  {
+    "_id": "evt-react-summit",
+    "title": "React Summit US 2025",
+    "slug": "react-summit-us-2025",
+    "description": "A day of talks on React Server Components, routing, and the patterns teams use in production.",
+    "overview": "Talks and hallway conversations for people shipping React applications.",
+    "image": "/images/event1.png",
+    "venue": "Moscone Center",
+    "location": "San Francisco, CA, USA",
+    "date": "2025-11-07",
+    "time": "09:00",
+    "mode": "offline",
+    "audience": "Frontend engineers",
+    "agenda": [
+      "Keynote",
+      "Server Components in practice",
+      "Office hours"
+    ],
+    "organizer": "React Summit",
+    "tags": [
+      "react",
+      "javascript"
+    ],
+    "createdAt": "2026-01-06T12:00:00.000Z",
+    "updatedAt": "2026-10-26T16:58:02.435Z",
+    "status": "confirmed"
+  },
+  {
+    "_id": "evt-kubecon",
+    "title": "KubeCon + CloudNativeCon Europe 2026",
+    "slug": "kubecon-cloudnativecon-eu-2026",
+    "description": "The Cloud Native Computing Foundation brings maintainers and operators together for Kubernetes, observability, and platform engineering.",
+    "overview": "Three days of cloud-native talks, maintainer sessions, and project updates.",
+    "image": "/images/event2.png",
+    "venue": "Messe Wien",
+    "location": "Vienna, Austria",
+    "date": "2026-03-18",
+    "time": "10:00",
+    "mode": "offline",
+    "audience": "Platform and infrastructure engineers",
+    "agenda": [
+      "Project updates",
+      "Contributor summit",
+      "Platform engineering track"
+    ],
+    "organizer": "CNCF",
+    "tags": [
+      "kubernetes",
+      "cloud"
+    ],
+    "createdAt": "2026-01-05T12:00:00.000Z",
+    "updatedAt": "2026-10-26T16:58:02.986Z",
+    "status": "confirmed"
+  },
+  {
+    "_id": "evt-aws-reinvent",
+    "title": "AWS re:Invent 2025",
+    "slug": "aws-reinvent-2025",
+    "description": "Amazon Web Services' yearly conference for builders using compute, data, and AI services.",
+    "overview": "Announcements, workshops, and deep dives across the AWS platform.",
+    "image": "/images/event3.png",
+    "venue": "The Venetian",
+    "location": "Las Vegas, NV, USA",
+    "date": "2025-12-01",
+    "time": "08:30",
+    "mode": "offline",
+    "audience": "Cloud engineers and architects",
+    "agenda": [
+      "Monday night live",
+      "Workshops",
+      "Certification lounge"
+    ],
+    "organizer": "Amazon Web Services",
+    "tags": [
+      "aws",
+      "cloud"
+    ],
+    "createdAt": "2026-01-04T12:00:00.000Z",
+    "updatedAt": "2026-10-26T16:58:00.338Z",
+    "status": "confirmed"
+  },
+  {
+    "_id": "evt-nextjs-conf",
+    "title": "Next.js Conf 2025",
+    "slug": "nextjs-conf-2025",
+    "description": "The Next.js conference covers the App Router, caching, and how teams deploy full-stack React apps.",
+    "overview": "A hybrid conference for developers building with Next.js.",
+    "image": "/images/event4.png",
+    "venue": "Online and Los Angeles",
+    "location": "Los Angeles, CA, USA (Hybrid)",
+    "date": "2025-11-12",
+    "time": "09:30",
+    "mode": "hybrid",
+    "audience": "Full-stack JavaScript developers",
+    "agenda": [
+      "Opening keynote",
+      "Caching workshop",
+      "Deploy office hours"
+    ],
+    "organizer": "Vercel",
+    "tags": [
+      "nextjs",
+      "javascript"
+    ],
+    "createdAt": "2026-01-03T12:00:00.000Z",
+    "updatedAt": "2026-10-26T16:57:59.776Z",
+    "status": "confirmed"
+  },
+  {
+    "_id": "evt-google-cloud-next",
+    "title": "Google Cloud Next 2026",
+    "slug": "google-cloud-next-2026",
+    "description": "Google Cloud's conference for data, infrastructure, and application teams.",
+    "overview": "Product news and technical sessions from Google Cloud.",
+    "image": "/images/event5.png",
+    "venue": "San Jose McEnery",
+    "location": "San Jose, CA, USA",
+    "date": "2026-04-07",
+    "time": "09:00",
+    "mode": "offline",
+    "audience": "Cloud developers",
+    "agenda": [
+      "Keynote",
+      "Data cloud sessions",
+      "Hands-on labs"
+    ],
+    "organizer": "Google Cloud",
+    "tags": [
+      "google",
+      "cloud"
+    ],
+    "createdAt": "2026-01-02T12:00:00.000Z",
+    "updatedAt": "2026-10-26T16:57:58.824Z",
+    "status": "confirmed"
+  },
+  {
+    "_id": "evt-ethglobal",
+    "title": "ETHGlobal Hackathon: Paris 2026",
+    "slug": "ethglobal-paris-2026",
+    "description": "A weekend hackathon for teams building on Ethereum and adjacent open protocols.",
+    "overview": "Build a project, meet mentors, and demo on Sunday.",
+    "image": "/images/event6.png",
+    "venue": "Station F",
+    "location": "Paris, France",
+    "date": "2026-07-10",
+    "time": "10:00",
+    "mode": "offline",
+    "audience": "Hackers and protocol developers",
+    "agenda": [
+      "Kickoff",
+      "Mentorship hours",
+      "Demos and judging"
+    ],
+    "organizer": "ETHGlobal",
+    "tags": [
+      "ethereum",
+      "hackathon"
+    ],
+    "createdAt": "2026-01-01T12:00:00.000Z",
+    "updatedAt": "2026-10-26T16:57:58.131Z",
+    "status": "confirmed"
+  }
+]
