@@ -1,42 +1,10 @@
 [
   {
-    "_id": "e49111de-75a5-49ce-b334-0e6b6329331c",
-    "eventId": "fb53b565-56a3-4620-b76f-d60e569ffd55",
-    "slug": "voluptatem-consequatur-in-quis-provident",
-    "email": "vahagnharutyunian@gmail.com",
-    "createdAt": "2026-10-26T17:14:00.387Z",
-    "updatedAt": "2026-10-26T17:14:00.387Z"
-  },
-  {
-    "_id": "47265c45-a18f-4eb8-b7e2-54fa575e5d17",
-    "eventId": "a0127664-c22e-4859-bbfc-a91dc0f5fa27",
-    "slug": "mollitia-doloribus-reiciendis-quis-incidunt-aliquid-eius-id-rerum-occaecat-placeat-qui-vero-facil",
-    "email": "vahagnharutyunian@gmail.com",
-    "createdAt": "2026-10-26T14:52:22.353Z",
-    "updatedAt": "2026-10-26T14:52:22.353Z"
-  },
-  {
     "_id": "8b6ec2ee-8804-43a3-ae0d-2d8c1f8f851d",
     "eventId": "evt-react-summit",
     "slug": "react-summit-us-2025",
     "email": "777vahagn777@gmail.com",
     "createdAt": "2026-10-26T14:48:14.478Z",
     "updatedAt": "2026-10-26T14:48:14.478Z"
-  },
-  {
-    "_id": "66103f26-51b8-47a5-a632-a3aba66e2e8e",
-    "eventId": "a0127664-c22e-4859-bbfc-a91dc0f5fa27",
-    "slug": "mollitia-doloribus-reiciendis-quis-incidunt-aliquid-eius-id-rerum-occaecat-placeat-qui-vero-facil",
-    "email": "ada@example.com",
-    "createdAt": "2026-10-26T14:47:30.240Z",
-    "updatedAt": "2026-10-26T14:47:30.240Z"
-  },
-  {
-    "_id": "a3f19c99-f742-4a04-890e-2b68b760a5c3",
-    "eventId": "a0127664-c22e-4859-bbfc-a91dc0f5fa27",
-    "slug": "mollitia-doloribus-reiciendis-quis-incidunt-aliquid-eius-id-rerum-occaecat-placeat-qui-vero-facil",
-    "email": "777vahagn777@gmail.com",
-    "createdAt": "2026-10-26T14:43:18.251Z",
-    "updatedAt": "2026-10-26T14:43:18.251Z"
   }
 ]
